@@ -1,9 +1,20 @@
 let canvas;
 let ctx;
 
-// Need to work on the distrubution more.
-// a more even field
-// challenge: 0 overlap
+// count and distribution settings
+const circleCount = 100;
+const squggleCount = 400;
+const desiredTileDimension = 50;
+
+// circle settings
+const circle_solidChance = 0.66;
+const circle_baseDimension = 5; 
+const circle_randomAdditionalSize = () => Math.ceil(Math.random() * 15);
+
+// Squiggle settings
+const squiggle_maxSegmentCount = 6;
+const squiggle_randomSegmentLength = () => Math.ceil((Math.random() * 10)) + 10;
+const squiggle_randomLineWidth = () => Math.floor(Math.random() * 5) + 2;
 
 console.log("Lets try draw some snakes");
 
@@ -11,7 +22,6 @@ window.onload = function(){
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
     ResizeCanvas();
-
 }
 
 window.addEventListener("resize", ResizeCanvas);
@@ -82,7 +92,6 @@ function RandomiseDistributionGrid(){
     }
 }
 
-
 function DebugDrawDistributionGrid(){
     const lastFillStyle = ctx.fillStyle;
 
@@ -122,19 +131,18 @@ function Draw(){
     // DrawCheckerboard();
 
     ctx.fillStyle = "rgb(0, 0, 0)";
-    DrawRandomCircles(100);
-    DrawSquiggles(400)
+    DrawRandomCircles(circleCount);
+    DrawSquiggles(squggleCount)
 }
 
-const tileDimension = 50;
 function DrawCheckerboard(){
-    let rows = Math.ceil(canvas.height / tileDimension);
-    let columns = Math.ceil(canvas.width / tileDimension);
+    let rows = Math.ceil(canvas.height / desiredTileDimension);
+    let columns = Math.ceil(canvas.width / desiredTileDimension);
     // ctx.fillStyle = "rgb(200 0 0)";
     for (let i = 0; i <= rows; i++) {
         for (let j = 0; j <= columns; j++){
             if(i % 2 == j % 2){
-                ctx.fillRect(tileDimension * j, tileDimension * i, tileDimension, tileDimension);
+                ctx.fillRect(desiredTileDimension * j, desiredTileDimension * i, desiredTileDimension, desiredTileDimension);
             }
         }
         
@@ -168,22 +176,18 @@ function GetRandomCoordsInsideRange(itemSize){
 
 function DrawRandomCircles(count){    
     for (let index = 0; index < count; index++) {
-        let isSolid = Math.random() > 0.66;
-        let dimensions = 5; 
+        let isSolid = Math.random() > circle_solidChance;
+        let dimension = circle_baseDimension;
 
-        if(!isSolid){
-            dimensions += Math.random() * 15
-        } 
+        if(!isSolid) dimension += circle_randomAdditionalSize();
 
         // let [x, y] = GetRandomCoordsInsideRange(dimensions);
         let [x,y] = GetDistributedRandomCoord();
 
         ctx.beginPath();
-        ctx.arc(x, y, dimensions, 0, 2 * Math.PI);
+        ctx.arc(x, y, dimension, 0, 2 * Math.PI);
         ctx.stroke();
-        if(isSolid){
-            ctx.fill();
-        }
+        if(isSolid) ctx.fill();
     }
 }
 
@@ -197,7 +201,7 @@ function DrawSquiggles(count){
 
     for (let index = 0; index < count; index++) {
         // draw lines made up of 1 to 6 parts
-        let segmentCount = Math.ceil(Math.random() * 6);
+        let segmentCount = Math.ceil(Math.random() * squiggle_maxSegmentCount);
         //segmentCount = 200;
         let path = GetPath(segmentCount);
 
@@ -212,10 +216,6 @@ function DrawSquiggles(count){
         // let [x,y] = GetRandomCoordsInsideRange(50);
         let [x,y] = GetDistributedRandomCoord();
 
-
-        let lineWidth = 1
-        lineWidth += 100;
-
         // draw
         // ctx.beginPath();
         // ctx.moveTo(x, y);
@@ -226,7 +226,7 @@ function DrawSquiggles(count){
 
         for(let i = 0; i < coords.length - 1; i++){
             if(Math.random() > 0.75){
-                ctx.lineWidth = Math.floor(Math.random() * 5) + 2;
+                ctx.lineWidth = squiggle_randomLineWidth();
             } else {
                 ctx.lineWidth = 1;
             }
@@ -236,10 +236,7 @@ function DrawSquiggles(count){
             ctx.lineTo(coords[i+1][0] + x, coords[i+1][1] + y);
             ctx.stroke();
         }
-
     }
-
-    
 }
 
 function GetPath(length){
@@ -269,9 +266,8 @@ function GetPath(length){
     return path;
 }
 
-const directions = [1,2,3,4,-1,-2,-3,-4]
-
 function GetRandomDirection(lastDirection = 0){
+    const directions = [1,2,3,4,-1,-2,-3,-4]
     let direction;
 
     while(direction == null || direction == lastDirection || lastDirection + direction == 0){
@@ -284,7 +280,7 @@ function ConvertPathIntoCoords(path){
     let coords = [[0,0]];    
     
     for(let j = 0; j < path.length; j++){
-        let segmentLength = Math.ceil((Math.random() * 10)) + 10;
+        let segmentLength = squiggle_randomSegmentLength();
         let dir = path[j];
 
         // set new coord to old one, and then add to it.
