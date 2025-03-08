@@ -14,6 +14,8 @@ const circle_randomAdditionalSize = () => Math.ceil(Math.random() * 15);
 // Squiggle settings
 const squiggle_maxSegmentCount = 6;
 const squiggle_randomSegmentLength = () => Math.ceil((Math.random() * 10)) + 10;
+const squiggle_normalLineWidth = 1;
+const squiggle_abnormalWidthChance = 0.75;
 const squiggle_randomLineWidth = () => Math.floor(Math.random() * 5) + 2;
 
 console.log("Lets try draw some snakes");
@@ -225,10 +227,10 @@ function DrawSquiggles(count){
         // ctx.stroke();
 
         for(let i = 0; i < coords.length - 1; i++){
-            if(Math.random() > 0.75){
+            if(Math.random() > squiggle_abnormalWidthChance){
                 ctx.lineWidth = squiggle_randomLineWidth();
             } else {
-                ctx.lineWidth = 1;
+                ctx.lineWidth = squiggle_normalLineWidth;
             }
             
             ctx.beginPath();
