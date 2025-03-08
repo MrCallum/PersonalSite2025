@@ -3,22 +3,26 @@ let ctx;
 
 // count and distribution settings
 const circleCount = 100;
-const squggleCount = 400;
-const desiredTileDimension = 50;
+const squggleCount = 200; // 400
+const overallBorder = () => Math.min(canvas.width * 0.2, canvas.height * 0.2);
+const desiredTileDimension = 250;
+const innerCellBorderPercent = 0.05;
 
 // circle settings
-const circle_solidChance = 0.66;
+const circle_LineWidth = 2;
+// Random needs to be greater than this to be a solid circle.
+const circle_solidChance = 0.65;
 const circle_baseDimension = 5; 
 const circle_randomAdditionalSize = () => Math.ceil(Math.random() * 15);
 
 // Squiggle settings
 const squiggle_maxSegmentCount = 6;
-const squiggle_randomSegmentLength = () => Math.ceil((Math.random() * 10)) + 10;
-const squiggle_normalLineWidth = 1;
-const squiggle_abnormalWidthChance = 0.75;
+const squiggle_randomSegmentLength = () => Math.ceil((Math.random() * 3)) + 15;
+const squiggle_normalLineWidth = 2;
+// Random needs to be greater than this to be an abnormally thick line.
+// I prefer the even look so it has been set to 1 so it is never reached.
+const squiggle_abnormalWidthChance = 1; 
 const squiggle_randomLineWidth = () => Math.floor(Math.random() * 5) + 2;
-
-console.log("Lets try draw some snakes");
 
 window.onload = function(){
     canvas = document.getElementById("canvas");
@@ -36,20 +40,19 @@ function ResizeCanvas(){
     Draw();
 }
 
-// this will be an array of arrays where the inner array is [xPos, yPos, count]
-let distributionGrid = [];
 // A 1d array with two elements: an xDimension, yDimension.
 let tileSize = [,];
-
+// this will be an array of arrays where the inner array is [xPos, yPos, count]
+let distributionGrid = [];
 
 function MakeDistributionGrid(){
     
     // Tiles need to be inside of a border zone.
     // border is the same size in both x and y axis.
-    const doubleBorder = Math.min(canvas.width * 0.10, canvas.height * 0.10);
+    const doubleBorder = overallBorder();
  
     // make the tile size approximately a size that you desire in both axis, then calculate how many rows and columns that will be.
-    const approxTileSize = 50;
+    const approxTileSize = desiredTileDimension;
     const columnCount = Math.floor((canvas.width - doubleBorder) / approxTileSize);
     const rowCount = Math.floor((canvas.height - doubleBorder) / approxTileSize);
 
@@ -109,6 +112,8 @@ function DebugDrawDistributionGrid(){
     ctx.fillStyle = lastFillStyle;
 }
 
+let currentHighest = 1;
+
 function GetCellToPlaceElementAndRecord(){
     // returns the starting coordinate of a cell that should be less popualted than other cells.
     // Get the last element in the distribution grid, 
@@ -116,16 +121,44 @@ function GetCellToPlaceElementAndRecord(){
 
     let lastElement = distributionGrid.pop();
     lastElement[2]++; // increment the count
+    if(lastElement[2] > currentHighest){
+        // shuffle the distribution grid again.
+        currentHighest++;
+        RandomiseDistributionGrid();
+    }
     distributionGrid.splice(0,0,lastElement);
     // return coord.
     return [lastElement[0], lastElement[1]];
 }
 
-function GetDistributedRandomCoord(){
+function GetDistributedRandomCoord(dimensions = [0,0]){
+    /* aim of this function is to return a semi-random starting coordinate to draw a shape at.
+        It's "semi-random" because:
+        1: We want the many hundereds of shapes to be distributed evenly over the canvas, hence why we use the "distributionGrid".
+        2: Inside a single cell, if "dimensions" are supplied we will try to fit the shape entirely within the cell. 
+    */
+
+    // this returns just the top left "starting coord" of a cell.
     const cellCoords = GetCellToPlaceElementAndRecord();
-    let xAddition = Math.ceil(Math.random() * tileSize[0]);
-    let yAddition = Math.ceil(Math.random() * tileSize[1]);
-    return [cellCoords[0] + xAddition, cellCoords[1] + yAddition];
+    // work out where the border adjusted starting coord is.
+    const innerCellBorder = [innerCellBorderPercent * tileSize[0], innerCellBorderPercent * tileSize[1]];
+    cellCoords[0] += innerCellBorder[0];
+    cellCoords[1] += innerCellBorder[1];
+
+    const horizontalSpace = tileSize[0] - (2 * innerCellBorder[0]) - dimensions[0];
+    const verticalSpace = tileSize[1] - (2 * innerCellBorder[1]) - dimensions[1];
+
+    if(horizontalSpace < 0 || verticalSpace < 0){
+        console.log("Warning! Shape was too big for cell");
+        return cellCoords;
+    } else {
+
+        let xAddition = Math.ceil(Math.random() * horizontalSpace);
+        let yAddition = Math.ceil(Math.random() * verticalSpace);
+        return [cellCoords[0] + xAddition, cellCoords[1] + yAddition];
+    }
+
+
 }
 
 function Draw(){
@@ -133,7 +166,7 @@ function Draw(){
     // DrawCheckerboard();
 
     ctx.fillStyle = "rgb(0, 0, 0)";
-    DrawRandomCircles(circleCount);
+    DrawCircles(circleCount);
     DrawSquiggles(squggleCount)
 }
 
@@ -176,7 +209,8 @@ function GetRandomCoordsInsideRange(itemSize){
 
 }
 
-function DrawRandomCircles(count){    
+function DrawCircles(count){    
+    ctx.lineWidth = circle_LineWidth;
     for (let index = 0; index < count; index++) {
         let isSolid = Math.random() > circle_solidChance;
         let dimension = circle_baseDimension;
@@ -211,12 +245,14 @@ function DrawSquiggles(count){
         // get path lengths
         
         let coords = ConvertPathIntoCoords(path);
-    
-        // calculate area
+
+        // calculate centre for better placement.
+        let shapeDimensions = GetDimensionsOfShape(coords);
+        //shapeCentre = [0,0];
 
         // get start coord
         // let [x,y] = GetRandomCoordsInsideRange(50);
-        let [x,y] = GetDistributedRandomCoord();
+        let [x,y] = GetDistributedRandomCoord(shapeDimensions);
 
         // draw
         // ctx.beginPath();
@@ -234,8 +270,8 @@ function DrawSquiggles(count){
             }
             
             ctx.beginPath();
-            ctx.moveTo(coords[i][0] + x, coords[i][1] + y);
-            ctx.lineTo(coords[i+1][0] + x, coords[i+1][1] + y);
+            ctx.moveTo(coords[i][0] + x + shapeDimensions[0], coords[i][1] + y + shapeDimensions[1]);
+            ctx.lineTo(coords[i+1][0] + x+ shapeDimensions[0], coords[i+1][1] + y + shapeDimensions[1]);
             ctx.stroke();
         }
     }
@@ -318,6 +354,17 @@ function ConvertPathIntoCoords(path){
     return coords;
 }
 
+function GetDimensionsOfShape(coords){
+    const xs = coords.map(c => c[0]);
+    const ys = coords.map(c => c[1]);
+
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    
+    return [ maxX-minX, maxY-minY];
+}
 
 // Tests
 function TestRandomDirectionEmpty(){
