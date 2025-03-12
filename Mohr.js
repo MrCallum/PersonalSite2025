@@ -1,12 +1,13 @@
 let canvas;
 let ctx;
+const regenArtElement = document.querySelector('.regen-art');
 
 // count and distribution settings
 const circleCount = 100;
-const squggleCount = 200; // 400
+const squggleCount = 100; // 400
 const overallBorder = () => Math.min(canvas.width * 0.2, canvas.height * 0.2);
-const desiredTileDimension = 250;
-const innerCellBorderPercent = 0.05;
+const desiredTileDimension = 150;
+const innerCellBorderPercent = 0.1;
 
 // circle settings
 const circle_LineWidth = 2;
@@ -32,11 +33,14 @@ window.onload = function(){
 
 window.addEventListener("resize", ResizeCanvas);
 
+if (regenArtElement) {
+    regenArtElement.addEventListener('click', Redraw);
+}
+  
+
 function ResizeCanvas(){
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    MakeDistributionGrid();
-    RandomiseDistributionGrid();
     Draw();
 }
 
@@ -164,10 +168,16 @@ function GetDistributedRandomCoord(dimensions = [0,0]){
 function Draw(){
     // ctx.fillStyle = "rgb(255, 255, 255)";
     // DrawCheckerboard();
-
+    MakeDistributionGrid();
+    RandomiseDistributionGrid();
     ctx.fillStyle = "rgb(0, 0, 0)";
     DrawCircles(circleCount);
     DrawSquiggles(squggleCount)
+}
+
+function Redraw(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    Draw();
 }
 
 function DrawCheckerboard(){
