@@ -6,15 +6,16 @@
     <title>Document</title>
 </head>
 <style>
-     *,
+     /* *,
     *::before,
     *::after {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-    }
+    } */
     canvas {
         /* overflow: hidden; */
+        z-index: -1;
         position: absolute;
         top: 0;
         left: 0;
@@ -23,23 +24,43 @@
 
     body {
         background-color: rgb(222, 222, 220);
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     }
-    /* body {
-        display: flex;
-        height: 100vh;
-        background-color: #111;
-    } */
+    h1, p {
+        background-color: black;
+        color: white;            /* makes the text visible on a dark background */
+        border-radius: 10px;     /* creates rounded corners */
+        padding: 0.5rem 1rem;
+        margin: 0.5rem;
+        display: inline-block;
+    }
+    a {
+        /* Remove default hyperlink css */
+        color: inherit;
+        text-decoration: inherit;
+    }
+    p:hover {
+        
+        background-color: rgb(211, 166, 0);
+        transition: all 0.3s ease;
+        color: black;
+        /* text-decoration: underline; */
+        
+    }
     
-    /* span {
-        color: #777;
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        user-select: none;
-    } */
 </style>
 <body>
     <canvas id="canvas"></canvas>
+    <main>
+        <h1>Callum Morrison</h1>
+        <br>
+        <p><a target=”_blank” href="https://teal-ray-008.notion.site/Callum-Morrison-Expanded-CV-e8ba350ea7794071ac63bb05e006bd9e">C.V. and Portfolio</a></p>
+        <p><a target=”_blank” href="https://www.linkedin.com/in/callum-morrison-edinburgh">LinkedIn</a></p>
+        <p><a target=”_blank” href="mailto:mrcallummorrison@gmail.com">Email</a></p>
+        <br>
+        <p class="regen-art">- Regenerate background artwork -</p>
+    </main>
     <script type="text/javascript" src="./Mohr.js"></script>
 </body>
 </html>
+
