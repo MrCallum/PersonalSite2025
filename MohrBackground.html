@@ -3,58 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="Style.css" />
     <title>Document</title>
 </head>
-<style>
-     /* *,
-    *::before,
-    *::after {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    } */
-    canvas {
-        /* overflow: hidden; */
-        z-index: -1;
-        position: absolute;
-        top: 0;
-        left: 0;
-        /* border: 1px solid coral; */
-    }
-
-    body {
-        background-color: rgb(222, 222, 220);
-        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    }
-    h1, p {
-        background-color: black;
-        color: white;            /* makes the text visible on a dark background */
-        border-radius: 10px;     /* creates rounded corners */
-        padding: 0.5rem 1rem;
-        margin: 0.5rem;
-        display: inline-block;
-    }
-    a {
-        /* Remove default hyperlink css */
-        color: inherit;
-        text-decoration: inherit;
-    }
-    p:hover {
-        
-        background-color: rgb(211, 166, 0);
-        transition: all 0.3s ease;
-        color: black;
-        /* text-decoration: underline; */
-        
-    }
-
-    .sticky {
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-    }
-    
-</style>
 <body>
     <canvas id="canvas"></canvas>
     <main>

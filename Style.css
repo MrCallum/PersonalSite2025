@@ -1,0 +1,74 @@
+/* Designed first on a 2k monitor. */
+canvas {
+    /* overflow: hidden; */
+    z-index: -1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* border: 1px solid coral; */
+    
+}
+
+body {
+    background-color: rgb(222, 222, 220);
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+h1, p {
+    background-color: black;
+    color: white;            /* makes the text visible on a dark background */
+    border-radius: 0.5rem;     /* creates rounded corners */
+    padding: 0.5rem 1rem;
+    margin: 0.5rem;
+    display: inline-block;
+}
+a {
+    /* Remove default hyperlink css */
+    color: inherit;
+    text-decoration: inherit;
+}
+p:hover {
+    
+    background-color: rgb(211, 166, 0);
+    transition: all 0.3s ease;
+    color: black;
+    /* text-decoration: underline; */
+    
+}
+
+.sticky {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+}
+
+@media only screen and (width < 320px) {
+    canvas {
+        border: 3px solid rgb(0, 4, 255);
+    }
+}
+
+@media only screen and (width>=320px) {
+    canvas {
+        border: 3px solid rgb(0, 255, 234);
+    }
+}
+
+@media only screen and (width>=480px) {
+    canvas {
+        border: 3px solid rgb(30, 255, 0);
+
+    }
+
+}
+
+@media only screen and (width>=768px) {
+    canvas {
+        border: 3px solid rgb(255, 157, 0);
+    }
+}
+
+@media only screen and (width>=1024px) {
+    canvas {
+        border: 1px solid red;
+    }
+}
