@@ -47,22 +47,18 @@ let intermediateConfig = {
 }
 
 let mobileConfig = {
-    circle_count : 50,
-    squiggle_count : 75,
+    // Just circles. Reason being is that a thick line is required otherwise it looks blurred.
+    // And a thick line creates ugly gaps at bends. To be fixed.
+    circle_count : 25,
+    squiggle_count : 0,
 
     desiredTileDimension : 75,
     innerCellBorderPercent : 0.1,
     
-    circle_LineWidth : 1,
+    circle_LineWidth : 5,
     circle_solidChance : 0.65,
-    circle_baseDimension : 3, 
-    circle_randomAdditionalSize : () => Math.ceil(Math.random() * 10),
-    
-    squiggle_maxSegmentCount : 6,
-    squiggle_randomSegmentLength : () => Math.ceil((Math.random() * 3)) + 5,
-    squiggle_normalLineWidth : 1,
-    squiggle_abnormalWidthChance : 1, 
-    squiggle_randomLineWidth : () => Math.floor(Math.random() * 5) + 2,
+    circle_baseDimension : 5, 
+    circle_randomAdditionalSize : () => Math.ceil(Math.random() * 20),
 }
 
 let currentConfig = defaultConfig;
