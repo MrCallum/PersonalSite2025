@@ -2,32 +2,85 @@ let canvas;
 let ctx;
 const regenArtElement = document.querySelector('.regen-art');
 
-// count and distribution settings
-const circleCount = 100;
-const squggleCount = 100; // 400
-const overallBorder = () => Math.min(canvas.width * 0.2, canvas.height * 0.2);
-const desiredTileDimension = 150;
-const innerCellBorderPercent = 0.1;
+const defaultConfig = {
+    // Designed around a 2k screen
+    circle_count : 100,
+    squiggle_count : 100,
+    overallBorder : () => Math.min(canvas.width * 0.2, canvas.height * 0.2),
+    desiredTileDimension : 150,
+    innerCellBorderPercent : 0.1,
+    
+    // circle settings
+    circle_LineWidth : 2,
+    // Random needs to be greater than this to be a solid circle.
+    circle_solidChance : 0.65,
+    circle_baseDimension : 5, 
+    circle_randomAdditionalSize : () => Math.ceil(Math.random() * 15),
+    
+    // Squiggle settings
+    squiggle_maxSegmentCount : 6,
+    squiggle_randomSegmentLength : () => Math.ceil((Math.random() * 3)) + 15,
+    squiggle_normalLineWidth : 2,
+    // Random needs to be greater than this to be an abnormally thick line.
+    // I prefer the even look so it has been set to 1 so it is never reached.
+    squiggle_abnormalWidthChance : 1, 
+    squiggle_randomLineWidth : () => Math.floor(Math.random() * 5) + 2,
+};
 
-// circle settings
-const circle_LineWidth = 2;
-// Random needs to be greater than this to be a solid circle.
-const circle_solidChance = 0.65;
-const circle_baseDimension = 5; 
-const circle_randomAdditionalSize = () => Math.ceil(Math.random() * 15);
+let intermediateConfig = {
+    circle_count : 75,
+    squiggle_count : 75,
+    overallBorder : () => Math.min(canvas.width * 0.2, canvas.height * 0.2),
+    desiredTileDimension : 100,
+    innerCellBorderPercent : 0.1,
+    
+    circle_LineWidth : 2,
+    circle_solidChance : 0.65,
+    circle_baseDimension : 5, 
+    circle_randomAdditionalSize : () => Math.ceil(Math.random() * 10),
+    
+    squiggle_maxSegmentCount : 6,
+    squiggle_randomSegmentLength : () => Math.ceil((Math.random() * 3)) + 10,
+    squiggle_normalLineWidth : 2,
+    squiggle_abnormalWidthChance : 1, 
+    squiggle_randomLineWidth : () => Math.floor(Math.random() * 5) + 2,
+}
 
-// Squiggle settings
-const squiggle_maxSegmentCount = 6;
-const squiggle_randomSegmentLength = () => Math.ceil((Math.random() * 3)) + 15;
-const squiggle_normalLineWidth = 2;
-// Random needs to be greater than this to be an abnormally thick line.
-// I prefer the even look so it has been set to 1 so it is never reached.
-const squiggle_abnormalWidthChance = 1; 
-const squiggle_randomLineWidth = () => Math.floor(Math.random() * 5) + 2;
+let mobileConfig = {
+    circle_count : 50,
+    squiggle_count : 75,
+
+    desiredTileDimension : 75,
+    innerCellBorderPercent : 0.1,
+    
+    circle_LineWidth : 1,
+    circle_solidChance : 0.65,
+    circle_baseDimension : 3, 
+    circle_randomAdditionalSize : () => Math.ceil(Math.random() * 10),
+    
+    squiggle_maxSegmentCount : 6,
+    squiggle_randomSegmentLength : () => Math.ceil((Math.random() * 3)) + 5,
+    squiggle_normalLineWidth : 1,
+    squiggle_abnormalWidthChance : 1, 
+    squiggle_randomLineWidth : () => Math.floor(Math.random() * 5) + 2,
+}
+
+let currentConfig = defaultConfig;
 
 window.onload = function(){
+
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    if(canvas.width < 500){
+        console.log("Using mobile config");
+        currentConfig = { ...defaultConfig, ...mobileConfig };
+    } else if(canvas.width < 1000){
+        console.log("Using intermediate config");
+        currentConfig = { ...defaultConfig, ...intermediateConfig };
+    }
     ResizeCanvas();
 }
 
@@ -53,10 +106,10 @@ function MakeDistributionGrid(){
     
     // Tiles need to be inside of a border zone.
     // border is the same size in both x and y axis.
-    const doubleBorder = overallBorder();
+    const doubleBorder = currentConfig.overallBorder();
  
     // make the tile size approximately a size that you desire in both axis, then calculate how many rows and columns that will be.
-    const approxTileSize = desiredTileDimension;
+    const approxTileSize = currentConfig.desiredTileDimension;
     const columnCount = Math.floor((canvas.width - doubleBorder) / approxTileSize);
     const rowCount = Math.floor((canvas.height - doubleBorder) / approxTileSize);
 
@@ -145,7 +198,7 @@ function GetDistributedRandomCoord(dimensions = [0,0]){
     // this returns just the top left "starting coord" of a cell.
     const cellCoords = GetCellToPlaceElementAndRecord();
     // work out where the border adjusted starting coord is.
-    const innerCellBorder = [innerCellBorderPercent * tileSize[0], innerCellBorderPercent * tileSize[1]];
+    const innerCellBorder = [currentConfig.innerCellBorderPercent * tileSize[0], currentConfig.innerCellBorderPercent * tileSize[1]];
     cellCoords[0] += innerCellBorder[0];
     cellCoords[1] += innerCellBorder[1];
 
@@ -171,8 +224,8 @@ function Draw(){
     MakeDistributionGrid();
     RandomiseDistributionGrid();
     ctx.fillStyle = "rgb(0, 0, 0)";
-    DrawCircles(circleCount);
-    DrawSquiggles(squggleCount)
+    DrawCircles(currentConfig.circle_count);
+    DrawSquiggles(currentConfig.squiggle_count)
 }
 
 function Redraw(){
@@ -181,13 +234,13 @@ function Redraw(){
 }
 
 function DrawCheckerboard(){
-    let rows = Math.ceil(canvas.height / desiredTileDimension);
-    let columns = Math.ceil(canvas.width / desiredTileDimension);
+    let rows = Math.ceil(canvas.height / currentConfig.desiredTileDimension);
+    let columns = Math.ceil(canvas.width / currentConfig.desiredTileDimension);
     // ctx.fillStyle = "rgb(200 0 0)";
     for (let i = 0; i <= rows; i++) {
         for (let j = 0; j <= columns; j++){
             if(i % 2 == j % 2){
-                ctx.fillRect(desiredTileDimension * j, desiredTileDimension * i, desiredTileDimension, desiredTileDimension);
+                ctx.fillRect(currentConfig.desiredTileDimension * j, currentConfig.desiredTileDimension * i, currentConfig.desiredTileDimension, currentConfig.desiredTileDimension);
             }
         }
         
@@ -220,12 +273,12 @@ function GetRandomCoordsInsideRange(itemSize){
 }
 
 function DrawCircles(count){    
-    ctx.lineWidth = circle_LineWidth;
+    ctx.lineWidth = currentConfig.circle_LineWidth;
     for (let index = 0; index < count; index++) {
-        let isSolid = Math.random() > circle_solidChance;
-        let dimension = circle_baseDimension;
+        let isSolid = Math.random() > currentConfig.circle_solidChance;
+        let dimension = currentConfig.circle_baseDimension;
 
-        if(!isSolid) dimension += circle_randomAdditionalSize();
+        if(!isSolid) dimension += currentConfig.circle_randomAdditionalSize();
 
         // let [x, y] = GetRandomCoordsInsideRange(dimensions);
         let [x,y] = GetDistributedRandomCoord();
@@ -247,7 +300,7 @@ function DrawSquiggles(count){
 
     for (let index = 0; index < count; index++) {
         // draw lines made up of 1 to 6 parts
-        let segmentCount = Math.ceil(Math.random() * squiggle_maxSegmentCount);
+        let segmentCount = Math.ceil(Math.random() * currentConfig.squiggle_maxSegmentCount);
         //segmentCount = 200;
         let path = GetPath(segmentCount);
 
@@ -273,10 +326,10 @@ function DrawSquiggles(count){
         // ctx.stroke();
 
         for(let i = 0; i < coords.length - 1; i++){
-            if(Math.random() > squiggle_abnormalWidthChance){
-                ctx.lineWidth = squiggle_randomLineWidth();
+            if(Math.random() > currentConfig.squiggle_abnormalWidthChance){
+                ctx.lineWidth = currentConfig.squiggle_randomLineWidth();
             } else {
-                ctx.lineWidth = squiggle_normalLineWidth;
+                ctx.lineWidth = currentConfig.squiggle_normalLineWidth;
             }
             
             ctx.beginPath();
@@ -328,7 +381,7 @@ function ConvertPathIntoCoords(path){
     let coords = [[0,0]];    
     
     for(let j = 0; j < path.length; j++){
-        let segmentLength = squiggle_randomSegmentLength();
+        let segmentLength = currentConfig.squiggle_randomSegmentLength();
         let dir = path[j];
 
         // set new coord to old one, and then add to it.
