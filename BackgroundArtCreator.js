@@ -16,7 +16,10 @@ const defaultConfig = {
     circle_solidChance : 0.65,
     circle_baseDimension : 5, 
     circle_randomAdditionalSize : () => Math.ceil(Math.random() * 15),
-    
+    circle_mainColour: "rgb(0, 0, 0)",
+    circle_colourChance : 0.8,
+    circle_colours : ["rgb(186, 122, 11)", "rgb(27, 84, 149)"], // "rgb(149, 110, 27)",
+
     // Squiggle settings
     squiggle_maxSegmentCount : 6,
     squiggle_randomSegmentLength : () => Math.ceil((Math.random() * 3)) + 15,
@@ -25,6 +28,9 @@ const defaultConfig = {
     // I prefer the even look so it has been set to 1 so it is never reached.
     squiggle_abnormalWidthChance : 1, 
     squiggle_randomLineWidth : () => Math.floor(Math.random() * 5) + 2,
+    squiggle_mainColour: "rgb(0, 0, 0)",
+    squiggle_colourChance : 0.8,
+    squiggle_colours : ["rgb(186, 122, 11)", "rgb(27, 84, 149)"],
 };
 
 let intermediateConfig = {
@@ -59,6 +65,7 @@ let mobileConfig = {
     circle_solidChance : 0.65,
     circle_baseDimension : 5, 
     circle_randomAdditionalSize : () => Math.ceil(Math.random() * 20),
+    
 }
 
 let currentConfig = defaultConfig;
@@ -219,7 +226,6 @@ function Draw(){
     // DrawCheckerboard();
     MakeDistributionGrid();
     RandomiseDistributionGrid();
-    ctx.fillStyle = "rgb(0, 0, 0)";
     DrawCircles(currentConfig.circle_count);
     DrawSquiggles(currentConfig.squiggle_count)
 }
@@ -270,15 +276,24 @@ function GetRandomCoordsInsideRange(itemSize){
 
 function DrawCircles(count){    
     ctx.lineWidth = currentConfig.circle_LineWidth;
+
     for (let index = 0; index < count; index++) {
+
         let isSolid = Math.random() > currentConfig.circle_solidChance;
         let dimension = currentConfig.circle_baseDimension;
-
+        
         if(!isSolid) dimension += currentConfig.circle_randomAdditionalSize();
-
+        
         // let [x, y] = GetRandomCoordsInsideRange(dimensions);
         let [x,y] = GetDistributedRandomCoord();
 
+        if(Math.random() >= currentConfig.circle_colourChance){
+            ctx.strokeStyle = currentConfig.circle_colours[Math.floor(Math.random() * currentConfig.circle_colours.length)];
+        } else {
+            ctx.strokeStyle = currentConfig.circle_mainColour;
+        }
+        ctx.fillStyle = ctx.strokeStyle;
+        
         ctx.beginPath();
         ctx.arc(x, y, dimension, 0, 2 * Math.PI);
         ctx.stroke();
@@ -313,13 +328,12 @@ function DrawSquiggles(count){
         // let [x,y] = GetRandomCoordsInsideRange(50);
         let [x,y] = GetDistributedRandomCoord(shapeDimensions);
 
-        // draw
-        // ctx.beginPath();
-        // ctx.moveTo(x, y);
-        // coords.forEach(c => {
-        //     ctx.lineTo(c[0] + x, c[1] + y);
-        // });
-        // ctx.stroke();
+        // decide coloour
+        if(Math.random() >= currentConfig.squiggle_colourChance){
+            ctx.strokeStyle = currentConfig.circle_colours[Math.floor(Math.random() * currentConfig.squiggle_colours.length)];
+        } else {
+            ctx.strokeStyle = currentConfig.circle_mainColour;
+        }        
 
         for(let i = 0; i < coords.length - 1; i++){
             if(Math.random() > currentConfig.squiggle_abnormalWidthChance){
